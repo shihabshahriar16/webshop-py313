@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WebShop task viewer</title>
+<style>
+  :root {
+    --bg:#0f1419; --panel:#171d26; --panel2:#1d2530; --border:#2a3340;
+    --fg:#e6edf3; --muted:#8b98a8; --accent:#4da3ff;
+    --ok:#3fcf8e; --bad:#ff7a59; --warn:#f2c14e; --opt:#b07cff; --hide:#ff7a59;
+    --radius:10px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f6f8fa; --panel:#fff; --panel2:#f0f3f6; --border:#d6dde5;
+            --fg:#1b232c; --muted:#5a6b7b; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+         background:var(--bg); color:var(--fg); height:100vh; display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; gap:12px; padding:10px 16px; flex-wrap:wrap;
+           background:var(--panel); border-bottom:1px solid var(--border); }
+  h1 { font-size:15px; margin:0; font-weight:650; }
+  .count { color:var(--muted); font-size:12px; }
+  .grow { flex:1; }
+  input { background:var(--panel2); border:1px solid var(--border); color:var(--fg);
+          padding:6px 10px; border-radius:6px; min-width:220px; font-size:13px; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { font-size:12px; padding:3px 9px; border:1px solid var(--border); border-radius:999px;
+          color:var(--muted); cursor:pointer; user-select:none; }
+  .chip.active { color:var(--fg); border-color:var(--accent); background:rgba(77,163,255,.12); }
+  .chip.how { border-color:var(--opt); color:var(--opt); }
+  main { flex:1; display:grid; grid-template-columns:minmax(290px,370px) 1fr; min-height:0; }
+  #list { overflow:auto; border-right:1px solid var(--border); background:var(--panel); }
+  #detail { overflow:auto; padding:16px 20px 40px; }
+  @media (max-width: 860px) {
+    main { grid-template-columns:1fr; grid-template-rows:38vh 1fr; }
+    #list { border-right:none; border-bottom:1px solid var(--border); }
+    #detail { padding:12px 14px 32px; }
+    .kv { grid-template-columns:110px 1fr; }
+  }
+  .row { padding:9px 14px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .row:hover { background:var(--panel2); }
+  .row.sel { background:rgba(77,163,255,.10); border-left:3px solid var(--accent); padding-left:11px; }
+  .row .meta { font-size:11px; color:var(--muted); margin-top:3px; display:flex; gap:8px; flex-wrap:wrap; }
+  .pill { font-size:11px; padding:1px 7px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+  .pill.ok { color:var(--ok); border-color:var(--ok); }
+  .pill.bad { color:var(--bad); border-color:var(--bad); }
+  .pill.part { color:var(--warn); border-color:var(--warn); }
+  .empty { color:var(--muted); padding:28px; text-align:center; }
+  h2 { font-size:16px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:12px; margin-bottom:14px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+          padding:12px 14px; margin-bottom:12px; }
+  .card.sees   { border-left:3px solid var(--accent); }
+  .card.hidden2{ border-left:3px solid var(--hide); }
+  .card.grade  { border-left:3px solid var(--ok); }
+  .card.multi  { border-left:3px solid var(--opt); }
+  .card h3 { margin:0 0 3px; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+  .card.sees h3{ color:var(--accent); } .card.hidden2 h3{ color:var(--hide); }
+  .card.grade h3{ color:var(--ok); }    .card.multi h3{ color:var(--opt); }
+  .why { color:var(--muted); font-size:12px; margin:0 0 10px; }
+  .kv { display:grid; grid-template-columns:150px 1fr; gap:5px 12px; font-size:13px; }
+  .kv dt { color:var(--muted); }
+  .kv dd { margin:0; }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px; }
+  .tag { display:inline-block; font-size:12px; padding:2px 8px; margin:2px 4px 2px 0;
+         border-radius:6px; border:1px solid var(--border); background:var(--panel2); }
+  .tag.attr { border-color:var(--accent); } .tag.opt { border-color:var(--opt); }
+  pre { margin:0; white-space:pre-wrap; word-break:break-word; font-family:ui-monospace,Menlo,monospace;
+        font-size:12.5px; background:var(--panel2); border:1px solid var(--border);
+        border-radius:6px; padding:8px 10px; max-height:230px; overflow:auto; }
+  .lbl { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:9px 0 3px; }
+  .la { display:inline-block; font-size:11.5px; font-family:ui-monospace,Menlo,monospace;
+        padding:1px 6px; margin:2px 4px 2px 0; border:1px solid var(--border); border-radius:5px; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--border); }
+  th { color:var(--muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  td.r { text-align:right; font-family:ui-monospace,Menlo,monospace; }
+  tr.target td { background:rgba(63,207,142,.10); }
+  .bar { display:inline-block; height:7px; border-radius:4px; background:var(--opt); vertical-align:middle; }
+  .bar.full { background:var(--ok); }
+  .formula { background:var(--panel2); border:1px solid var(--border); border-radius:6px;
+             padding:8px 10px; font-family:ui-monospace,Menlo,monospace; font-size:12.5px; }
+  .step { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+          margin-bottom:10px; overflow:hidden; }
+  .step > .hd { display:flex; gap:10px; align-items:baseline; padding:8px 12px;
+                background:var(--panel2); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .step .n { color:var(--muted); font-size:12px; min-width:50px; }
+  .act { font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:600; }
+  .act.search { color:var(--accent); } .act.click { color:var(--ok); } .act.none { color:var(--bad); }
+  .note { color:var(--muted); font-size:12px; }
+  .rw { margin-left:auto; font-size:12px; color:var(--muted); }
+  .rw.pos { color:var(--ok); font-weight:650; }
+  .body { padding:10px 12px; }
+  details summary { cursor:pointer; color:var(--muted); font-size:12px; }
+  #how { display:none; }
+  #how.on { display:block; }
+</style>
+</head>
+<body>
+<header>
+  <h1>WebShop task viewer</h1>
+  <span class="count" id="count"></span>
+  <div class="grow"></div>
+  <span class="chip how" id="howBtn">How scoring works</span>
+  <input id="search" placeholder="Search instruction, attribute, ASIN…" />
+  <div class="chips" id="chips"></div>
+</header>
+<main>
+  <div id="list"></div>
+  <div id="detail"><div class="empty">Select a task on the left.</div></div>
+</main>
+
+<script src="webshop_examples.js"></script>
+<script>
+(function () {
+  const EX = window.WEBSHOP_EXAMPLES, META = window.WEBSHOP_META || {};
+  const listEl = document.getElementById("list"), detailEl = document.getElementById("detail");
+  const chipsEl = document.getElementById("chips"), searchEl = document.getElementById("search");
+  const countEl = document.getElementById("count"), howBtn = document.getElementById("howBtn");
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
+    c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+  if (!EX || !EX.length) {
+    detailEl.innerHTML = '<div class="empty">No data. From the repo root run ' +
+      '<code>python viewer/build_viewer.py</code> first (needs ./setup_py313.sh).</div>';
+    return;
+  }
+
+  const HOW =
+    '<div class="card" id="how"><h3>How a WebShop task is scored</h3>' +
+    '<p class="why"><b>There is no gold action sequence.</b> Unlike ALFWorld, WebShop ships no ' +
+    'expert walkthrough to copy. It grades the <b>product you buy</b> against the goal spec, so ' +
+    'many different action sequences — and many different products — can score well.</p>' +
+    '<div class="formula">reward = (matched_attributes + matched_options + price_ok)<br>' +
+    '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ (n_attributes + n_options + 1)' +
+    ' &nbsp;×&nbsp; type_match</div>' +
+    '<p class="why" style="margin-top:10px"><b>Partial credit is normal.</b> Buying a near-miss ' +
+    'scores between 0 and 1 — match the product type and one of three criteria and you get 0.33. ' +
+    'This is why success rate (thresholded at 1.0) and mean reward must BOTH be reported: an agent ' +
+    'can average 0.6 reward with a 25% success rate.</p>' +
+    '<p class="why"><b>The target ASIN is not required.</b> It is only the product the instruction ' +
+    'was generated from. Any product matching every attribute, option and the price cap scores 1.0. ' +
+    'See “multiple solutions” on each task for measured examples.</p>' +
+    '<p class="why"><b>The agent is not told what to search for.</b> It receives the instruction, ' +
+    'the page text and the clickables — nothing else. The goal\'s own reference query is hidden; ' +
+    'the reference path below uses it, so it is <i>easier</i> than what an agent faces.</p></div>';
+
+  const band = e => e.reference_reward >= 1 ? "ok" : (e.reference_reward > 0 ? "part" : "bad");
+  const FILTERS = {
+    all:  () => true,
+    p1:   e => e.reference_reward >= 1 && e.reference_pages <= 1,
+    deep: e => e.reference_reward >= 1 && e.reference_pages > 1,
+    none: e => e.reference_reward < 1,
+  };
+  const LABELS = { all:"All", p1:"Target on page 1", deep:"Needs pagination",
+                   none:"Reference failed" };
+  let active = "all", selected = null, query = "", showHow = false;
+
+  Object.keys(FILTERS).forEach(k => {
+    const c = document.createElement("span");
+    c.className = "chip" + (k === "all" ? " active" : "");
+    c.textContent = LABELS[k] + " (" + EX.filter(FILTERS[k]).length + ")";
+    c.onclick = () => { active = k; [...chipsEl.children].forEach(x => x.classList.remove("active"));
+                        c.classList.add("active"); render(); };
+    chipsEl.appendChild(c);
+  });
+  howBtn.onclick = () => { showHow = !showHow;
+    const el = document.getElementById("how"); if (el) el.classList.toggle("on", showHow); };
+  searchEl.oninput = () => { query = searchEl.value.toLowerCase(); render(); };
+
+  const matches = e => !query || [e.instruction, e.hidden.query, e.hidden.target_asin,
+      e.hidden.target_name, e.category, e.product_category,
+      (e.grading.attributes || []).join(" ")].join(" ").toLowerCase().includes(query);
+
+  function render() {
+    const rows = EX.filter(FILTERS[active]).filter(matches);
+    countEl.textContent = rows.length + " / " + EX.length + " tasks" +
+      (META.total_sessions ? "  ·  " + META.total_sessions + " sessions available" : "") +
+      (META.num_products ? "  ·  " + META.num_products + " products" : "");
+    listEl.innerHTML = rows.map(e =>
+      '<div class="row' + (selected === e.session ? " sel" : "") + '" data-s="' + e.session + '">' +
+      '<div>' + esc(e.instruction) + '</div>' +
+      '<div class="meta"><span class="pill ' + band(e) + '">ref ' + e.reference_reward.toFixed(2) + '</span>' +
+      '<span>session ' + e.session + '</span>' +
+      '<span>' + (e.reference_pages > 1 ? "page " + e.reference_pages : "page 1") + '</span>' +
+      '<span>' + esc(e.category || "") + '</span></div></div>').join("")
+      || '<div class="empty">No tasks match.</div>';
+    [...listEl.querySelectorAll(".row")].forEach(r => {
+      r.onclick = () => { selected = Number(r.dataset.s); render(); detail(selected); };
+    });
+  }
+
+  function detail(session) {
+    const e = EX.find(x => x.session === session);
+    if (!e) return;
+    const g = e.grading, v = e.agent_first_view, opts = Object.entries(g.options || {});
+    const den = g.denominator;
+
+    let html = '<h2>' + esc(e.instruction) + '</h2>' +
+      '<div class="sub">session ' + e.session + ' · ' + esc(e.product_category || e.category || "") + '</div>' + HOW;
+
+    // 1. INPUT -------------------------------------------------------------
+    html += '<div class="card sees"><h3>1 · What the agent receives</h3>' +
+      '<p class="why">This is the ENTIRE input at step 0 — the goal line, the page text and the ' +
+      'clickable menu. The agent must compose its own search query from the instruction.</p>' +
+      '<div class="lbl">Instruction</div><pre>' + esc(v.goal) + '</pre>' +
+      '<div class="lbl">Observation (text mode)</div><pre>' + esc(v.observation) + '</pre>' +
+      '<div class="lbl">Available actions</div><div>' +
+      ((v.legal_actions || []).map(a => '<span class="la">' + esc(a) + '</span>').join("")
+        || '<span class="note">none</span>') + '</div></div>';
+
+    // 2. HIDDEN ------------------------------------------------------------
+    html += '<div class="card hidden2"><h3>2 · Hidden from the agent</h3>' +
+      '<p class="why">Used by the grader and by the reference path below — never shown to the agent. ' +
+      'The reference path is therefore <b>easier</b> than the real task.</p><dl class="kv">' +
+      '<dt>Reference query</dt><dd><code>search[' + esc(e.hidden.query) + ']</code></dd>' +
+      '<dt>Source product</dt><dd><code>' + esc(e.hidden.target_asin) + '</code> — ' +
+        esc(e.hidden.target_name) + '<br><span class="note">the product the instruction was written ' +
+        'from; buying it is sufficient but NOT required</span></dd></dl></div>';
+
+    // 3. GRADER ------------------------------------------------------------
+    html += '<div class="card grade"><h3>3 · What the grader rewards</h3>' +
+      '<p class="why">The purchased product is scored against these ' + den + ' criteria. ' +
+      'Each one matched adds 1/' + den + ' = ' + (1 / den).toFixed(2) + ', then the whole score is ' +
+      'multiplied by how well the product type matches.</p><dl class="kv">' +
+      '<dt>Attributes (' + (g.attributes || []).length + ')</dt><dd>' +
+        ((g.attributes || []).map(a => '<span class="tag attr">' + esc(a) + '</span>').join("")
+          || '<span class="note">none</span>') + '</dd>' +
+      '<dt>Options (' + opts.length + ')</dt><dd>' +
+        (opts.map(([k, val]) => '<span class="tag opt">' + esc(k) + ': ' + esc(val) + '</span>').join("")
+          || '<span class="note">none</span>') + '</dd>' +
+      '<dt>Price cap (1)</dt><dd>' + (g.price_upper != null ? "$" + g.price_upper : "—") + '</dd>' +
+      '</dl><div class="formula" style="margin-top:10px">reward = (matched_attributes + ' +
+      'matched_options + price_ok) / ' + den + ' × type_match</div></div>';
+
+    // 4. MULTIPLE SOLUTIONS -------------------------------------------------
+    const alts = e.alternatives || [];
+    html += '<div class="card multi"><h3>4 · Multiple solutions, different rewards</h3>' +
+      '<p class="why">Measured: each row was actually bought in the live environment for THIS goal. ' +
+      'Different products score differently — the task is not pass/fail.</p>';
+    if (alts.length || e.reference_reward > 0) {
+      html += '<table><tr><th>Product bought</th><th>Name</th><th style="width:170px">Reward</th></tr>' +
+        '<tr class="target"><td><code>' + esc(e.hidden.target_asin) + '</code></td>' +
+        '<td>' + esc((e.hidden.target_name || "").slice(0, 70)) + '</td>' +
+        '<td class="r">' + e.reference_reward.toFixed(2) +
+        ' <span class="bar full" style="width:' + Math.round(e.reference_reward * 70) + 'px"></span></td></tr>' +
+        alts.map(a => '<tr><td><code>' + esc(a.asin) + '</code></td><td>' +
+          esc((a.name || "").slice(0, 70)) + '</td><td class="r">' + a.reward.toFixed(2) +
+          ' <span class="bar" style="width:' + Math.round(a.reward * 70) + 'px"></span></td></tr>').join("") +
+        '</table>';
+    } else {
+      html += '<div class="note">No purchases recorded for this task.</div>';
+    }
+    html += '</div>';
+
+    // 5. REFERENCE TRAJECTORY ----------------------------------------------
+    html += '<div class="card"><h3>5 · Reference trajectory</h3><p class="why">Replays the HIDDEN ' +
+      'reference query, paginates to the source product, selects its options and buys. Each step ' +
+      'shows the agent-visible input before the action. Reached the product on page ' +
+      e.reference_pages + '.</p></div>';
+
+    html += (e.steps || []).map((s, i) => {
+      const kind = s.action == null ? "none" : (s.action.startsWith("search[") ? "search" : "click");
+      const sv = s.agent_sees || {};
+      return '<div class="step"><div class="hd"><span class="n">step ' + i + '</span>' +
+        '<span class="act ' + kind + '">' + esc(s.action == null ? "(no action possible)" : s.action) + '</span>' +
+        (s.note ? '<span class="note">' + esc(s.note) + '</span>' : "") +
+        '<span class="rw' + (s.reward > 0 ? " pos" : "") + '">reward ' + Number(s.reward).toFixed(2) +
+        (s.done ? " · done" : "") + '</span></div><div class="body">' +
+        '<div class="lbl">Observation the agent sees here</div><pre>' + esc(sv.observation || "") + '</pre>' +
+        ((sv.legal_actions || []).length
+          ? '<details><summary>Legal actions offered (' + sv.legal_actions.length + ')</summary>' +
+            '<div style="margin-top:6px">' + sv.legal_actions.map(a =>
+              '<span class="la">' + esc(a) + '</span>').join("") + '</div></details>' : "") +
+        '</div></div>';
+    }).join("");
+
+    detailEl.innerHTML = html;
+    const el = document.getElementById("how"); if (el) el.classList.toggle("on", showHow);
+    detailEl.scrollTop = 0;
+  }
+
+  render();
+  selected = EX[0].session; render(); detail(selected);
+})();
+</script>
+</body>
+</html>

@@ -1,9 +1,18 @@
 # 🛒 WebShop
 
-> **This is a Python 3.13 port of [princeton-nlp/WebShop](https://github.com/princeton-nlp/WebShop)'s
-> text environment.** Search, observations and rewards are verified identical to
-> the original Python 3.8 env. See [README_PY313.md](README_PY313.md) for setup and
-> the equivalence results. The unmodified upstream code is tagged `original`.
+> **This fork runs WebShop's text environment on Python 3.13**, with search,
+> observations and rewards verified identical to the original Python 3.8 env.
+>
+> * **Setup and usage:** [README_PY313.md](README_PY313.md). Run `./setup_py313.sh`
+>   in a 3.13 venv; it needs a JDK ≥ 11 but no conda, pyserini or Python 3.8.
+> * **Task viewer:** open [`viewer/index.html`](viewer/index.html) in a browser to
+>   see what an agent receives, what the grader rewards, and measured rewards for
+>   50 tasks. See [Task viewer](README_PY313.md#task-viewer).
+> * **Proof of equivalence:** [`equivalence/`](equivalence/) contains the harness
+>   and its results.
+> * The unmodified upstream code is the git tag `original`; this port is released
+>   as `py3.13-v1`. The rest of this README is upstream's and describes the
+>   original Python 3.8 setup.
 
 [![Python version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/release/python-3813/)
 [![License](https://img.shields.io/badge/License-Princeton-orange)](https://copyright.princeton.edu/policy)

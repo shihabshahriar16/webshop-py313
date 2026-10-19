@@ -8,21 +8,117 @@ and rewards. `equivalence/harness.py` checks that claim (see below).
 Only the text env is covered. The Selenium site env, the Flask web app, and
 `baseline_models/` were not ported.
 
+Contents: [Setup](#setup) · [Using the env](#using-the-env) ·
+[Task viewer](#task-viewer) · [What changed and why](#what-changed-and-why) ·
+[Equivalence harness](#equivalence-harness)
+
 ## Setup
 
+Tested on macOS (arm64) with Python 3.13.9. Every step runs on 3.13; no Python 3.8,
+conda or pyserini is needed.
+
+**Prerequisites**
+
+* Python 3.13
+* a JDK, version 11 or newer (verified identical on 11, 21 and 25):
+  * macOS: `brew install openjdk@21`
+  * Ubuntu/Debian: `sudo apt-get install openjdk-21-jdk-headless`
+* `git` and `curl`
+* about 250 MB of disk space
+
+**Steps**
+
 ```sh
-# 1. data + indexes: once, from the ORIGINAL setup (needs the py3.8 env once;
-#    see setup.sh / setup_arm.sh and the HuggingFace data mirror). Skip this if
-#    data/ and search_engine/indexes* already exist.
-# 2. any JDK >= 11 (verified identical on 11, 21, 25)
-export JAVA_HOME=$(/usr/libexec/java_home -v 21)    # macOS; optional, pyjnius finds one
-# 3. into your 3.13 venv
-PYTHON=/path/to/venv/bin/python ./setup_py313.sh
+git clone https://github.com/shihabshahriar16/webshop-py313
+cd webshop-py313
+python3.13 -m venv .venv && source .venv/bin/activate
+./setup_py313.sh
 ```
 
-`setup_py313.sh` installs `requirements_py313.txt`, installs the pinned spaCy model
-`en_core_web_sm==3.7.1` with `--no-deps`, and downloads `anserini-0.14.3-fatjar.jar`
-from Maven Central into `search_engine/jars/`, checking its SHA-256.
+`setup_py313.sh` runs these steps. Each one is skipped if its output already
+exists, so it is safe to re-run:
+
+1. installs `requirements_py313.txt`, plus the pinned spaCy model
+   `en_core_web_sm==3.7.1` (with `--no-deps`; see [the pins](#pins-that-matter-each-one-checked-with-the-harness));
+2. downloads `anserini-0.14.3-fatjar.jar` from Maven Central into
+   `search_engine/jars/`;
+3. downloads the 1000-product data set into `data/`. WebShop's original Google
+   Drive links are dead, so it uses the HuggingFace mirror
+   [`YWZBrandon/webshop-data`](https://huggingface.co/datasets/YWZBrandon/webshop-data);
+4. converts the products into the search corpus
+   (`search_engine/resources*/documents.jsonl`);
+5. builds the Lucene indexes (`search_engine/indexes*`) with Anserini's own
+   indexer from the same jar, using the same arguments as
+   `search_engine/run_indexing.sh`.
+
+Steps 2–4 check every file against the SHA-256 of the file the Python 3.8
+reference used, and stop on a mismatch.
+
+The script finds Java through `JAVA_HOME`, then `java` on `PATH`, then (on
+macOS) `/usr/libexec/java_home`. To use another Python, run
+`PYTHON=/path/to/python ./setup_py313.sh`.
+
+**Verify** (about a minute): this replays the Python 3.8 reference and exits 0
+only if every observation, ranking, goal, price and reward is identical.
+
+```sh
+python equivalence/harness.py replay --golden equivalence/golden/golden_py38.json.gz
+# ... VERDICT: IDENTICAL
+```
+
+## Using the env
+
+```python
+from web_agent_site.envs import WebAgentTextEnv   # run from the repo root
+
+env = WebAgentTextEnv(observation_mode="text", num_products=1000)
+obs, _ = env.reset(session=0)             # session = goal index (0..6909)
+print(env.instruction_text)
+print(env.get_available_actions())        # {'has_search_bar': True, 'clickables': [...]}
+obs, reward, done, info = env.step("search[decorative pillows 28 x 28]")
+obs, reward, done, info = env.step("click[b0743jkhbv]")   # a product from the results
+obs, reward, done, info = env.step("click[buy now]")      # reward in [0, 1]
+```
+
+Actions are `search[<free text>]` and `click[<one of the clickables>]`.
+
+Note that the first env built in a process gets random goal price caps; see
+[the caveat](#pre-existing-caveat-in-38-too-the-first-env-built-in-a-process-is-random)
+below. For reproducible goals, build the env twice and use the second, as the
+harness and the viewer do.
+
+## Task viewer
+
+`viewer/index.html` is a browser for WebShop tasks. For each task it shows:
+
+* exactly what an agent receives (instruction, observation, available actions);
+* what is hidden from the agent (the reference query and source product);
+* how the grader scores a purchase: the attributes, options and price cap, and
+  the reward formula;
+* several *different* products actually bought for the same goal, with the
+  reward each one earned (WebShop gives partial credit, and more than one product
+  can score 1.0);
+* a step-by-step reference trajectory.
+
+It ships with the first 50 tasks pre-built, so it works straight after cloning,
+without any setup:
+
+```sh
+open viewer/index.html                                   # macOS; or double-click it
+# or, if your browser blocks local scripts:
+python3 -m http.server -d viewer 8000                    # then visit http://localhost:8000
+```
+
+Use the search box and the filter chips (target on page 1 / needs pagination /
+reference failed) to find tasks, and click **How scoring works** for the reward
+rules.
+
+To regenerate it, or to include other tasks (this needs the setup above):
+
+```sh
+python viewer/build_viewer.py -n 100 --start 0        # ~0.2 s per task
+python viewer/build_viewer.py -n 100 --no-alternatives  # faster: skip the extra purchases
+```
 
 ## What changed and why
 
@@ -106,7 +202,17 @@ env per episode therefore gets a random task 0 and deterministic later tasks.
 Constructing envs from several threads at once makes the later ones random as
 well. This is identical in 3.8 and 3.13 and is not a porting artefact.
 
-multiagent-planning's adapter avoids this: it builds every env on a private
-`random.Random` that starts in the post-`seed(233)` state, under a lock
-(`_construct` in `src/envs/webshop_env.py`), so every task gets the deterministic
-instructions and the global RNG is untouched.
+How to avoid it as a caller: either build the env twice and use the second
+(simple, single-threaded), or build each env on a private `random.Random` that
+starts in the post-`seed(233)` state, by pointing the `random` global of the
+`web_agent_site` modules at it while constructing, under a lock. The second
+approach also keeps concurrent builds from interleaving and leaves the global
+RNG untouched. Both give the instructions shown in the viewer and stored in the
+golden file.
+
+### Harmless Java warnings
+
+On JDK 21 and newer, Lucene 8 prints
+`WARNING: A terminally deprecated method in sun.misc.Unsafe has been called ...`
+when it opens an index. This is expected and does not affect results (the
+harness passes on JDK 21 and 25). JDK 11 prints nothing.
