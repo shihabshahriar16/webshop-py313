@@ -1,4 +1,4 @@
-import gym
+from web_agent_site.envs.gym_compat import gym
 import random
 import requests
 import string

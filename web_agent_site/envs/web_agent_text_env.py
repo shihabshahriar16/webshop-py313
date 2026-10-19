@@ -1,9 +1,7 @@
-import gym
 import json
 import random
 import string
 import time
-import torch
 
 import numpy as np
 
@@ -11,6 +9,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Comment
 from collections import defaultdict
 from flask import Flask
+from web_agent_site.envs.gym_compat import gym
 from web_agent_site.engine.engine import (
     load_products,
     init_search_engine,
@@ -74,6 +73,7 @@ class WebAgentTextEnv(gym.Env):
         self.session = self.kwargs.get('session')
         self.session_prefix = self.kwargs.get('session_prefix')
         if self.kwargs.get('get_image', 0):
+            import torch  # only image features need torch
             self.feats = torch.load(FEAT_CONV)
             self.ids = torch.load(FEAT_IDS)
             self.ids = {url: idx for idx, url in enumerate(self.ids)}
@@ -157,6 +157,7 @@ class WebAgentTextEnv(gym.Env):
                 image_idx = self.ids[image_url]
                 image = self.feats[image_idx]
                 return image
+        import torch
         return torch.zeros(512)
 
     def get_instruction_text(self):

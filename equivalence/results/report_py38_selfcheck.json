@@ -1,0 +1,78 @@
+{
+ "goals": {
+  "differing": 0,
+  "first": [],
+  "n": 6910,
+  "n_cand": 6910
+ },
+ "golden": "equivalence/golden/golden_py38.json.gz",
+ "golden_runtime": {
+  "Flask": "2.1.2",
+  "Jinja2": "3.1.4",
+  "MarkupSafe": "2.1.3",
+  "Werkzeug": "2.3.8",
+  "beautifulsoup4": "4.11.1",
+  "en_core_web_sm": "3.7.1",
+  "gym": "0.24.0",
+  "gymnasium": null,
+  "java": "11.0.30 (/opt/anaconda3/envs/webshop/lib/jvm)",
+  "numpy": "1.24.4",
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "pyjnius": "1.7.0",
+  "pyserini": "0.17.0",
+  "python": "3.8.20",
+  "python-Levenshtein": null,
+  "rapidfuzz": null,
+  "search_backend": "pyserini",
+  "spacy": "3.7.2",
+  "thefuzz": "0.19.0",
+  "torch": "1.11.0"
+ },
+ "prices": {
+  "differing": 0,
+  "first": [],
+  "n": 1000
+ },
+ "rewards": {
+  "differing": 0,
+  "first": [],
+  "n": 8477,
+  "n_cand": 8477
+ },
+ "runtime": {
+  "Flask": "2.1.2",
+  "Jinja2": "3.1.4",
+  "MarkupSafe": "2.1.3",
+  "Werkzeug": "2.3.8",
+  "beautifulsoup4": "4.11.1",
+  "en_core_web_sm": "3.7.1",
+  "gym": "0.24.0",
+  "gymnasium": null,
+  "java": "11.0.30 (/opt/anaconda3/envs/webshop/lib/jvm)",
+  "numpy": "1.24.4",
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "pyjnius": "1.7.0",
+  "pyserini": "0.17.0",
+  "python": "3.8.20",
+  "python-Levenshtein": null,
+  "rapidfuzz": null,
+  "search_backend": "pyserini",
+  "spacy": "3.7.2",
+  "thefuzz": "0.19.0",
+  "torch": "1.11.0"
+ },
+ "topk": {
+  "exact@10": 400,
+  "exact@10_rate": 1.0,
+  "exact@50": 400,
+  "exact_scores": 400,
+  "perturbed": [],
+  "queries": 400
+ },
+ "trajectories": {
+  "diffs": [],
+  "equal": 899,
+  "units": 899
+ },
+ "verdict": "IDENTICAL"
+}

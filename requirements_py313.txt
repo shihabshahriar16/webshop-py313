@@ -1,0 +1,19 @@
+# WebShop text env (web_agent_site.envs.WebAgentTextEnv) on Python 3.13.
+# Install with ./setup_py313.sh, which also adds the pinned spaCy model and the
+# Anserini jar. Versions are the ones the equivalence harness passed with
+# (equivalence/results/); change them only by re-running the harness.
+Flask==3.1.2
+Werkzeug==3.1.3
+beautifulsoup4==4.13.4
+numpy>=1.26
+rich>=13
+tqdm>=4.64
+gymnasium>=1.0
+pyjnius==1.9.0            # drives Anserini 0.14.3 (Lucene 8) in place of pyserini 0.17
+spacy>=3.8,<3.9           # + en_core_web_sm 3.7.1 (setup_py313.sh, --no-deps). NOT 3.8.0:
+                          # that model changed 1510/8477 harness rewards.
+# thefuzz 0.19.0 WITHOUT python-Levenshtein = the same difflib.SequenceMatcher
+# fallback the py3.8 reference runs. (thefuzz 0.22 / rapidfuzz also matched on
+# the harness's 8477 reward pairs, but it is a different algorithm, so 0.19.0
+# stays.) Do NOT install python-Levenshtein / Levenshtein next to it.
+thefuzz==0.19.0

@@ -123,8 +123,20 @@ def get_synthetic_goals(all_products, product_prices):
                 cnt_atts[att] += 1
         goals += product_goals
     for goal in goals:
-        goal['weight'] = sum(1. / cnt_atts[att] for att in goal['attributes']) / len(goal['attributes'])
+        goal['weight'] = _naive_sum(1. / cnt_atts[att] for att in goal['attributes']) / len(goal['attributes'])
     return goals
+
+
+def _naive_sum(values):
+    """Left-to-right float addition, i.e. ``sum()`` before Python 3.12.
+
+    3.12 made ``sum()`` of floats compensated (Neumaier), which changes goal
+    weights -- and so weighted random goal sampling -- in the last ulp.
+    """
+    total = 0
+    for v in values:
+        total += v
+    return total
 
 
 def get_type_reward(purchased_product, goal):
