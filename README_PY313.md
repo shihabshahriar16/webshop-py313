@@ -164,6 +164,13 @@ python equivalence/harness.py replay --golden equivalence/golden/golden_py38.jso
 
 Every section is compared with `==`, floats included. There are no tolerances.
 
+CI (`.github/workflows/ci.yml`) runs the whole path on every push and pull
+request: from a clean checkout on Ubuntu x86_64 with Python 3.13 and JDK 21, it
+runs `./setup_py313.sh` (which builds data, corpus and indexes from scratch),
+then upstream's engine unit tests, then this replay, which must report
+IDENTICAL. That also shows the scores are identical across CPU architectures
+(the golden file was made on arm64 macOS).
+
 * **trajectories**: 50 sessions (0–49). For each: the initial observation and
   actions, then a fixed script with 2 differently-phrased searches (full
   instruction, truncated, dataset query, original case, keywords, punctuation

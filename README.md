@@ -1,5 +1,7 @@
 # 🛒 WebShop
 
+> [![Py3.13 equivalence](https://github.com/shihabshahriar16/webshop-py313/actions/workflows/ci.yml/badge.svg)](https://github.com/shihabshahriar16/webshop-py313/actions/workflows/ci.yml)
+>
 > **This fork runs WebShop's text environment on Python 3.13**, with search,
 > observations and rewards verified identical to the original Python 3.8 env.
 >
@@ -10,7 +12,7 @@
 >   for several products bought per goal. It is a pre-built snapshot; see
 >   [Task viewer](README_PY313.md#task-viewer) to regenerate it or include more tasks.
 > * **Proof of equivalence:** [`equivalence/`](equivalence/) contains the harness
->   and its results.
+>   and its results. CI re-runs it on every push, from a clean checkout on Linux.
 > * Git tags: `original` is the unmodified upstream code. `py3.13-v1` is the
 >   first port, and `py3.13-v1.1` adds the from-scratch setup and the viewer.
 >   The rest of this README is upstream's and describes the original Python 3.8
