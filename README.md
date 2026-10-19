@@ -10,9 +10,10 @@
 >   50 tasks. See [Task viewer](README_PY313.md#task-viewer).
 > * **Proof of equivalence:** [`equivalence/`](equivalence/) contains the harness
 >   and its results.
-> * The unmodified upstream code is the git tag `original`; this port is released
->   as `py3.13-v1`. The rest of this README is upstream's and describes the
->   original Python 3.8 setup.
+> * Git tags: `original` is the unmodified upstream code. `py3.13-v1` is the
+>   first port, and `py3.13-v1.1` adds the from-scratch setup and the viewer.
+>   The rest of this README is upstream's and describes the original Python 3.8
+>   setup.
 
 [![Python version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/release/python-3813/)
 [![License](https://img.shields.io/badge/License-Princeton-orange)](https://copyright.princeton.edu/policy)
