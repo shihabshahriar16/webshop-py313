@@ -1,5 +1,10 @@
 # 🛒 WebShop
 
+> **This is a Python 3.13 port of [princeton-nlp/WebShop](https://github.com/princeton-nlp/WebShop)'s
+> text environment.** Search, observations and rewards are verified identical to
+> the original Python 3.8 env. See [README_PY313.md](README_PY313.md) for setup and
+> the equivalence results. The unmodified upstream code is tagged `original`.
+
 [![Python version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/release/python-3813/)
 [![License](https://img.shields.io/badge/License-Princeton-orange)](https://copyright.princeton.edu/policy)
 [![PyPI version](https://badge.fury.io/py/webshop.svg)](https://badge.fury.io/py/webshop)
