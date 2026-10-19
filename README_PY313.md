@@ -105,3 +105,8 @@ The harness builds the env twice and uses the second. A caller that builds one
 env per episode therefore gets a random task 0 and deterministic later tasks.
 Constructing envs from several threads at once makes the later ones random as
 well. This is identical in 3.8 and 3.13 and is not a porting artefact.
+
+multiagent-planning's adapter avoids this: it builds every env on a private
+`random.Random` that starts in the post-`seed(233)` state, under a lock
+(`_construct` in `src/envs/webshop_env.py`), so every task gets the deterministic
+instructions and the global RNG is untouched.
