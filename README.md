@@ -5,9 +5,10 @@
 >
 > * **Setup and usage:** [README_PY313.md](README_PY313.md). Run `./setup_py313.sh`
 >   in a 3.13 venv; it needs a JDK ≥ 11 but no conda, pyserini or Python 3.8.
-> * **Task viewer:** open [`viewer/index.html`](viewer/index.html) in a browser to
->   see what an agent receives, what the grader rewards, and measured rewards for
->   50 tasks. See [Task viewer](README_PY313.md#task-viewer).
+> * **Task viewer, live: [shihabshahriar16.github.io/webshop-py313/](https://shihabshahriar16.github.io/webshop-py313/)**. Browse 50 WebShop
+>   tasks: what an agent receives, what the grader rewards, and measured rewards
+>   for several products bought per goal. It is a pre-built snapshot; see
+>   [Task viewer](README_PY313.md#task-viewer) to regenerate it or include more tasks.
 > * **Proof of equivalence:** [`equivalence/`](equivalence/) contains the harness
 >   and its results.
 > * Git tags: `original` is the unmodified upstream code. `py3.13-v1` is the

@@ -100,8 +100,15 @@ harness and the viewer do.
   can score 1.0);
 * a step-by-step reference trajectory.
 
-It ships with the first 50 tasks pre-built, so it works straight after cloning,
-without any setup:
+**Live: [https://shihabshahriar16.github.io/webshop-py313/](https://shihabshahriar16.github.io/webshop-py313/)**. This is published from `viewer/` by
+`.github/workflows/pages.yml` on every push that changes `viewer/`.
+
+The page is a **static snapshot**. `build_viewer.py` runs the real environment
+(Java search, the grader) offline and bakes the results into
+`viewer/webshop_examples.js`; the browser only displays them and cannot run new
+tasks itself. The committed snapshot has the first 50 tasks (sessions 0–49).
+
+To open it locally (works straight after cloning, without any setup):
 
 ```sh
 open viewer/index.html                                   # macOS; or double-click it
@@ -116,9 +123,11 @@ rules.
 To regenerate it, or to include other tasks (this needs the setup above):
 
 ```sh
-python viewer/build_viewer.py -n 100 --start 0        # ~0.2 s per task
+python viewer/build_viewer.py -n 100 --start 0        # ~0.2 s per task, ~21 KB per task
 python viewer/build_viewer.py -n 100 --no-alternatives  # faster: skip the extra purchases
 ```
+
+Commit and push `viewer/webshop_examples.js` and the live page updates by itself.
 
 ## What changed and why
 
