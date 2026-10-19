@@ -2,6 +2,12 @@ import pytest
 from math import isclose
 from web_agent_site.engine.goal import *
 
+# Upstream bug, not a porting regression: with en_core_web_sm 3.7.1 (the model
+# the benchmark actually uses) the title score here is 0.4, not 0.333, on the
+# original Python 3.8 env as well as on 3.13. Strict, so if a dependency change
+# ever makes it pass -- i.e. changes the POS tags rewards depend on -- CI fails.
+@pytest.mark.xfail(strict=True, reason="upstream expectation (0.333) does not match "
+                   "en_core_web_sm 3.7.1, which gives 0.4 on py3.8 and py3.13 alike")
 def test_get_type_reward():
     # Exact Match
     goal = {
